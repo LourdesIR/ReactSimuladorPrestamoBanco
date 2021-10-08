@@ -48,7 +48,16 @@ background-color:#26C6DA;
 const Error = styled.div`
 background-color:orange;
 color:#fff;
-width:100%;
+width:93%;
+padding:1rem;
+margin-bottom:2rem;
+text-align:center;
+`;
+
+const Mensaje = styled.div`
+background-color:Green;
+color:#fff;
+width:93%;
 padding:1rem;
 margin-bottom:2rem;
 text-align:center;
@@ -66,35 +75,109 @@ const Formulario = () => {
 
     //manejo de errores
 
-    const [error, guardarError] = useState(false);
+    const [error, setError] = useState(false);
 
     const {banco, prestamo, tipo, metodo, cuota} = datos;
 
     //Leer datos del form
-
     const informacion = e =>{
         guardarDatos({
             ...datos,
             [e.target.name]: e.target.value
         })
     }
-
+    const [mensaje,setMensaje]=useState("");
+    let valorTotal= 0;
+    let valorCuota=0;
     //Al apretar enviar
-
      const enviarDatos = e =>{
        e.preventDefault();
        if(banco.trim()==='' || prestamo.trim()==='' || tipo.trim()==='' || metodo.trim()==='' || cuota.trim()===''){
-           guardarError(true);
+           setError(true);
            return;
        }
-
-       guardarError(false);
+    
+        try{
+    // Eleccion del banco
+    if(banco==="nacion"||banco==="provincia"){
+        //bancos estatales
+        if(parseInt(prestamo) <= 500000){
+            switch (tipo){
+                case "personal":
+                    valorTotal = parseInt(prestamo)*2.8;
+                break
+                case "hipotecario":
+                    valorTotal = parseInt(prestamo)*2.3;
+                break
+                case "uva":
+                    valorTotal = parseInt(prestamo)*2.5;
+                break
+                default:
+                    console.log("no se ha encontrado el valor")
+            }
+            }else {
+            switch (tipo){
+                case "personal":
+                    valorTotal = parseInt(prestamo)*2.6;
+                break
+                case "hipotecario":
+                    valorTotal = parseInt(prestamo)*2.1;
+                break
+                case "uva":
+                    valorTotal = parseInt(prestamo)*2.3;
+                break
+                default:
+                    console.log("no se ha encontrado el valor")
+            }
+        }
+            valorCuota= valorTotal/parseInt(cuota);
+        }else{
+        //bancos privados
+        if(prestamo==="100000"||prestamo==="500000"){
+            switch (tipo){
+                case "personal":
+                    valorTotal = parseInt(prestamo)*3.2;
+                break
+                case "hipotecario":
+                    valorTotal = parseInt(prestamo)*2.6;
+                break
+                case "uva":
+                    valorTotal = parseInt(prestamo)*2.8;
+                break
+                default:
+                    console.log("no se ha encontrado el valor")
+            }
+        }else {
+            switch (tipo){
+                case "personal":
+                    valorTotal = parseInt(prestamo)*3.0;
+                break
+                case "hipotecario":
+                    valorTotal = parseInt(prestamo)*2.4;
+                break
+                case "uva":
+                    valorTotal = parseInt(prestamo)*2.6;
+                break
+                default:
+                    console.log("no se ha encontrado el valor")
+            }
+            }
+            valorCuota = valorTotal/parseInt(cuota);
+        }
+        }catch (e){
+            console.log("Huvo un error en Calculo", e)
+        }
+        if(valorTotal!==0 && valorCuota!==0) {
+            setMensaje(`El Total a pagar: ${Math.floor(valorTotal,-2)} pesos y el Valor de las cuotas: ${Math.round(valorCuota)} pesos por mes`)
+        }
+       setError(false);
     }
-
+    
     return (  
         <form 
         onSubmit={enviarDatos}
-        >
+        > 
+            {mensaje?<Mensaje>{mensaje}</Mensaje>:null} 
             {error?<Error>Todos los campos son obligatorios</Error>:null}
             <Campo>
             <Label>Banco</Label>
@@ -121,9 +204,9 @@ const Formulario = () => {
             onChange={informacion}
             >
             <option value="">-- Seleccione --</option>
-            <option value="millon">1.000.000 Pesos</option>
-            <option value="mediomillon">500.000 Pesos</option>
-            <option value="cienmil">100.000 Pesos</option>
+            <option value="1000000">1.000.000 Pesos</option>
+            <option value="500000">500.000 Pesos</option>
+            <option value="100000">100.000 Pesos</option>
             </Select>
             </Campo>
             <Campo>
@@ -153,13 +236,14 @@ const Formulario = () => {
             onChange={informacion}
             >
             <option value="">-- Seleccione --</option>
-            <option value="venticuatro">24 meses</option>
-            <option value="treintayseis">36 meses</option>
-            <option value="cuarentayocho">48 meses</option>
-            <option value="setentaydos">72 meses</option>
+            <option value="24">24 meses</option>
+            <option value="36">36 meses</option>
+            <option value="48">48 meses</option>
+            <option value="72">72 meses</option>
             </Select>
             </Campo>
             <Boton type='submit'> Calcular </Boton>
+           
         </form>
     );
 }
